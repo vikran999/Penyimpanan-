@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private File Storage</title>
+    <style>
+        :root {
+            --primary-color: #4a6baf;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #3a5998;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .alert {
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: var(--danger-color);
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: var(--success-color);
+            border: 1px solid #c3e6cb;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .user-info {
+            font-weight: 500;
+        }
+        
+        .file-upload {
+            margin-bottom: 30px;
+        }
+        
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .file-item {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            background-color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .file-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .file-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+        
+        .file-info {
+            font-size: 14px;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+        
+        .file-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .file-preview {
+            max-width: 100%;
+            max-height: 150px;
+            margin-bottom: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .file-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Private File Storage</h1>
+            <p>Secure file storage with admin-controlled access</p>
+        </div>
+        
+        <div id="loginSection">
+            <div class="card login-form">
+                <h2>Login</h2>
+                
+                <div id="loginError" class="alert alert-danger hidden"></div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" class="form-control" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-block">Login</button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="dashboardSection" class="hidden">
+            <div class="card">
+                <div class="dashboard-header">
+                    <h2>Dashboard</h2>
+                    <div>
+                        <span class="user-info">Welcome, <span id="displayUsername"></span></span>
+                        <button id="logoutBtn" class="btn btn-danger">Logout</button>
+                    </div>
+                </div>
+                
+                <div class="file-upload">
+                    <h3>Upload File</h3>
+                    
+                    <div id="uploadError" class="alert alert-danger hidden"></div>
+                    <div id="uploadSuccess" class="alert alert-success hidden"></div>
+                    
+                    <form id="uploadForm">
+                        <div class="form-group">
+                            <input type="file" id="fileInput" name="file" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn">Upload</button>
+                    </form>
+                </div>
+                
+                <div>
+                    <h3>Your Files</h3>
+                    
+                    <div id="deleteError" class="alert alert-danger hidden"></div>
+                    <div id="deleteSuccess" class="alert alert-success hidden"></div>
+                    
+                    <div id="filesContainer">
+                        <p>Loading files...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in
+            const token = localStorage.getItem('token');
+            if (token) {
+                showDashboard();
+                loadFiles();
+            }
+            
+            // Login form submission
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                fetch('api.php?action=login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('username', username);
+                        showDashboard();
+                        loadFiles();
+                    } else {
+                        showLoginError(data.message);
+                    }
+                })
+                .catch(error => {
+                    showLoginError('An error occurred. Please try again.');
+                });
+            });
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+                showLogin();
+            });
+            
+            // File upload form
+            document.getElementById('uploadForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const fileInput = document.getElementById('fileInput');
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    showUploadError('Please select a file.');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('token', localStorage.getItem('token'));
+                
+                fetch('api.php?action=upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showUploadSuccess('File uploaded successfully.');
+                        fileInput.value = '';
+                        loadFiles();
+                    } else {
+                        showUploadError(data.message);
+                    }
+                })
+                .catch(error => {
+                    showUploadError('An error occurred. Please try again.');
+                });
+            });
+        });
+        
+        function showLogin() {
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('dashboardSection').classList.add('hidden');
+        }
+        
+        function showDashboard() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('displayUsername').textContent = localStorage.getItem('username');
+        }
+        
+        function showLoginError(message) {
+            const errorElement = document.getElementById('loginError');
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+        
+        function showUploadError(message) {
+            const errorElement = document.getElementById('uploadError');
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            document.getElementById('uploadSuccess').classList.add('hidden');
+        }
+        
+        function showUploadSuccess(message) {
+            const successElement = document.getElementById('uploadSuccess');
+            successElement.textContent = message;
+            successElement.classList.remove('hidden');
+            document.getElementById('uploadError').classList.add('hidden');
+        }
+        
+        function showDeleteError(message) {
+            const errorElement = document.getElementById('deleteError');
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            document.getElementById('deleteSuccess').classList.add('hidden');
+        }
+        
+        function showDeleteSuccess(message) {
+            const successElement = document.getElementById('deleteSuccess');
+            successElement.textContent = message;
+            successElement.classList.remove('hidden');
+            document.getElementById('deleteError').classList.add('hidden');
+        }
+        
+        function loadFiles() {
+            const token = localStorage.getItem('token');
+            
+            fetch('api.php?action=listFiles', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ token })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayFiles(data.files);
+                } else {
+                    // Token might be invalid, logout
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('username');
+                    showLogin();
+                    showLoginError('Session expired. Please login again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading files:', error);
+            });
+        }
+        
+        function displayFiles(files) {
+            const container = document.getElementById('filesContainer');
+            
+            if (files.length === 0) {
+                container.innerHTML = '<p>No files uploaded yet.</p>';
+                return;
+            }
+            
+            let html = '<div class="file-grid">';
+            
+            files.forEach(file => {
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension);
+                const isVideo = ['mp4', 'webm', 'ogg', 'mov'].includes(fileExtension);
+                
+                let preview = '';
+                if (isImage) {
+                    preview = `<img src="${file.path}" alt="${file.name}" class="file-preview">`;
+                } else if (isVideo) {
+                    preview = `<video class="file-preview" controls>
+                        <source src="${file.path}" type="video/${fileExtension}">
+                        Your browser does not support the video tag.
+                    </video>`;
+                } else {
+                    preview = '<div class="file-icon">📄</div>';
+                }
+                
+                html += `
+                    <div class="file-item">
+                        ${preview}
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-info">
+                            ${formatFileSize(file.size)} • 
+                            ${new Date(file.modified * 1000).toLocaleDateString()}
+                        </div>
+                        <div class="file-actions">
+                            <a href="${file.path}" class="btn" download>Download</a>
+                            <button class="btn btn-danger" onclick="deleteFile('${file.name}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function deleteFile(filename) {
+            if (!confirm('Are you sure you want to delete this file?')) {
+                return;
+            }
+            
+            const token = localStorage.getItem('token');
+            
+            fetch('api.php?action=deleteFile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ token, filename })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showDeleteSuccess('File deleted successfully.');
+                    loadFiles();
+                } else {
+                    showDeleteError(data.message);
+                }
+            })
+            .catch(error => {
+                showDeleteError('An error occurred. Please try again.');
+            });
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
