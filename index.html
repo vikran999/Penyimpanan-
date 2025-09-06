@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penyimpanan Pribadi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .file-item:hover {
+            transform: translateY(-2px);
+            transition: transform 0.2s ease;
+        }
+        
+        .thumbnail {
+            object-fit: cover;
+            height: 100px;
+            width: 100px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Login Page -->
+    <div id="loginPage" class="flex items-center justify-center min-h-screen">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md fade-in">
+            <div class="text-center mb-8">
+                <i class="fas fa-cloud text-blue-500 text-5xl mb-4"></i>
+                <h1 class="text-3xl font-bold text-gray-800">Penyimpanan Pribadi</h1>
+                <p class="text-gray-600 mt-2">Masuk untuk mengakses file Anda</p>
+            </div>
+            
+            <div id="loginError" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+                <p id="loginErrorMessage"></p>
+            </div>
+            
+            <form id="loginForm">
+                <div class="mb-4">
+                    <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Username</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </div>
+                        <input class="shadow appearance-none border rounded w-full py-3 px-3 pl-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-blue-500" 
+                               id="username" type="text" placeholder="Username" required>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        <input class="shadow appearance-none border rounded w-full py-3 px-3 pl-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-blue-500" 
+                               id="password" type="password" placeholder="Password" required>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition duration-150 ease-in-out transform hover:scale-105" 
+                            type="submit">
+                        <i class="fas fa-sign-in-alt mr-2"></i> Login
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Dashboard Page -->
+    <div id="dashboardPage" class="hidden min-h-screen">
+        <nav class="bg-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <i class="fas fa-cloud text-blue-500 text-2xl mr-2"></i>
+                        <span class="font-bold text-xl text-gray-800">Penyimpanan Pribadi</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span id="welcomeMessage" class="text-gray-700 mr-4"></span>
+                        <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition duration-150 ease-in-out">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <!-- Upload Section -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8 fade-in">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-upload mr-2 text-blue-500"></i> Upload File
+                </h2>
+                
+                <div id="uploadError" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+                    <p id="uploadErrorMessage"></p>
+                </div>
+                
+                <div id="uploadSuccess" class="hidden bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+                    <p id="uploadSuccessMessage"></p>
+                </div>
+                
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition duration-150 ease-in-out" id="dropZone">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600 mb-2">Drag & drop file di sini atau klik untuk browse</p>
+                    <p class="text-sm text-gray-500 mb-4">Mendukung gambar, video, dokumen (max 10MB)</p>
+                    <input type="file" id="fileInput" class="hidden" multiple>
+                    <button id="browseBtn" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition duration-150 ease-in-out">
+                        Browse File
+                    </button>
+                </div>
+                
+                <div id="uploadProgress" class="hidden mt-4">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                    <p id="progressText" class="text-sm text-gray-600 mt-1">Uploading... 0%</p>
+                </div>
+            </div>
+            
+            <!-- File List Section -->
+            <div class="bg-white rounded-lg shadow-md p-6 fade-in">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-folder-open mr-2 text-blue-500"></i> File Saya
+                </h2>
+                
+                <div id="fileListEmpty" class="text-center py-8 text-gray-500">
+                    <i class="fas fa-folder-open text-4xl mb-4"></i>
+                    <p>Belum ada file yang diupload</p>
+                </div>
+                
+                <div id="fileListContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 hidden">
+                    <!-- File items will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if already logged in
+            const token = localStorage.getItem('token');
+            const username = localStorage.getItem('username');
+            
+            if (token && username) {
+                showDashboard(username);
+            }
+            
+            // Login form submission
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                // Show loading state
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+                submitBtn.disabled = true;
+                
+                // Send login request
+                fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Save token and username
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('username', username);
+                        
+                        // Show dashboard
+                        showDashboard(username);
+                    } else {
+                        // Show error
+                        showError('loginError', 'loginErrorMessage', data.message || 'Login gagal');
+                    }
+                })
+                .catch(error => {
+                    showError('loginError', 'loginErrorMessage', 'Terjadi kesalahan. Silakan coba lagi.');
+                    console.error('Login error:', error);
+                })
+                .finally(() => {
+                    // Reset button state
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+            });
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+                showLoginPage();
+            });
+            
+            // File upload
+            const fileInput = document.getElementById('fileInput');
+            const browseBtn = document.getElementById('browseBtn');
+            const dropZone = document.getElementById('dropZone');
+            
+            browseBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropZone.classList.add('border-blue-500', 'bg-blue-50');
+            });
+            
+            dropZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+            });
+            
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+                
+                if (e.dataTransfer.files.length) {
+                    handleFiles(e.dataTransfer.files);
+                }
+            });
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files.length) {
+                    handleFiles(this.files);
+                }
+            });
+            
+            function handleFiles(files) {
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    showError('uploadError', 'uploadErrorMessage', 'Sesi login telah berakhir. Silakan login kembali.');
+                    return;
+                }
+                
+                Array.from(files).forEach(file => {
+                    // Check file size (10MB max)
+                    if (file.size > 10 * 1024 * 1024) {
+                        showError('uploadError', 'uploadErrorMessage', `File ${file.name} terlalu besar. Maksimal 10MB.`);
+                        return;
+                    }
+                    
+                    uploadFile(file, token);
+                });
+            }
+            
+            function uploadFile(file, token) {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const uploadProgress = document.getElementById('uploadProgress');
+                const progressBar = document.getElementById('progressBar');
+                const progressText = document.getElementById('progressText');
+                
+                uploadProgress.classList.remove('hidden');
+                progressBar.style.width = '0%';
+                progressText.textContent = 'Uploading... 0%';
+                
+                fetch('/api/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Upload failed');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showSuccess('uploadSuccess', 'uploadSuccessMessage', `File ${file.name} berhasil diupload`);
+                        loadFileList();
+                    } else {
+                        showError('uploadError', 'uploadErrorMessage', data.message || 'Upload gagal');
+                    }
+                })
+                .catch(error => {
+                    showError('uploadError', 'uploadErrorMessage', 'Terjadi kesalahan saat upload file');
+                    console.error('Upload error:', error);
+                })
+                .finally(() => {
+                    uploadProgress.classList.add('hidden');
+                });
+                
+                // Simulate progress (in a real app, you'd use XHR for actual progress tracking)
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 5;
+                    if (progress > 90) {
+                        clearInterval(interval);
+                    }
+                    progressBar.style.width = `${progress}%`;
+                    progressText.textContent = `Uploading... ${progress}%`;
+                }, 200);
+            }
+            
+            function loadFileList() {
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    return;
+                }
+                
+                fetch('/api/files', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayFileList(data.files);
+                    } else {
+                        console.error('Failed to load files:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading files:', error);
+                });
+            }
+            
+            function displayFileList(files) {
+                const fileListEmpty = document.getElementById('fileListEmpty');
+                const fileListContainer = document.getElementById('fileListContainer');
+                
+                if (files.length === 0) {
+                    fileListEmpty.classList.remove('hidden');
+                    fileListContainer.classList.add('hidden');
+                    return;
+                }
+                
+                fileListEmpty.classList.add('hidden');
+                fileListContainer.classList.remove('hidden');
+                fileListContainer.innerHTML = '';
+                
+                files.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item bg-gray-50 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-150 ease-in-out';
+                    
+                    // Determine file icon based on type
+                    let fileIcon = 'fa-file';
+                    let thumbnail = '';
+                    
+                    if (file.type.startsWith('image/')) {
+                        fileIcon = 'fa-file-image';
+                        thumbnail = `<img src="/uploads/${file.name}" alt="${file.name}" class="thumbnail w-full h-32 object-cover">`;
+                    } else if (file.type.startsWith('video/')) {
+                        fileIcon = 'fa-file-video';
+                        thumbnail = `<div class="bg-gray-200 h-32 flex items-center justify-center">
+                            <i class="fas fa-file-video text-4xl text-gray-500"></i>
+                        </div>`;
+                    } else if (file.type.includes('pdf')) {
+                        fileIcon = 'fa-file-pdf';
+                        thumbnail = `<div class="bg-gray-200 h-32 flex items-center justify-center">
+                            <i class="fas fa-file-pdf text-4xl text-red-500"></i>
+                        </div>`;
+                    } else if (file.type.includes('word') || file.type.includes('document')) {
+                        fileIcon = 'fa-file-word';
+                        thumbnail = `<div class="bg-gray-200 h-32 flex items-center justify-center">
+                            <i class="fas fa-file-word text-4xl text-blue-500"></i>
+                        </div>`;
+                    } else if (file.type.includes('sheet') || file.type.includes('excel')) {
+                        fileIcon = 'fa-file-excel';
+                        thumbnail = `<div class="bg-gray-200 h-32 flex items-center justify-center">
+                            <i class="fas fa-file-excel text-4xl text-green-500"></i>
+                        </div>`;
+                    } else {
+                        thumbnail = `<div class="bg-gray-200 h-32 flex items-center justify-center">
+                            <i class="fas fa-file text-4xl text-gray-500"></i>
+                        </div>`;
+                    }
+                    
+                    fileItem.innerHTML = `
+                        ${thumbnail}
+                        <div class="p-4">
+                            <h3 class="font-semibold text-gray-800 truncate" title="${file.name}">${file.name}</h3>
+                            <p class="text-sm text-gray-600 mt-1">${formatFileSize(file.size)}</p>
+                            <div class="mt-3 flex space-x-2">
+                                <a href="/api/download/${file.id}" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-center py-1 px-2 rounded text-sm transition duration-150 ease-in-out">
+                                    <i class="fas fa-download mr-1"></i> Download
+                                </a>
+                                <button class="delete-file flex-1 bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded text-sm transition duration-150 ease-in-out" data-id="${file.id}">
+                                    <i class="fas fa-trash mr-1"></i> Hapus
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    fileListContainer.appendChild(fileItem);
+                });
+                
+                // Add event listeners to delete buttons
+                document.querySelectorAll('.delete-file').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const fileId = this.getAttribute('data-id');
+                        deleteFile(fileId);
+                    });
+                });
+            }
+            
+            function deleteFile(fileId) {
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    return;
+                }
+                
+                if (confirm('Apakah Anda yakin ingin menghapus file ini?')) {
+                    fetch(`/api/files/${fileId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            loadFileList();
+                        } else {
+                            alert('Gagal menghapus file: ' + (data.message || 'Unknown error'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting file:', error);
+                        alert('Terjadi kesalahan saat menghapus file');
+                    });
+                }
+            }
+            
+            function showDashboard(username) {
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('dashboardPage').classList.remove('hidden');
+                document.getElementById('welcomeMessage').textContent = `Selamat datang, ${username}!`;
+                
+                // Load file list
+                loadFileList();
+            }
+            
+            function showLoginPage() {
+                document.getElementById('loginPage').classList.remove('hidden');
+                document.getElementById('dashboardPage').classList.add('hidden');
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+                hideError('loginError');
+            }
+            
+            function showError(errorId, messageId, message) {
+                document.getElementById(errorId).classList.remove('hidden');
+                document.getElementById(messageId).textContent = message;
+                
+                // Auto hide after 5 seconds
+                setTimeout(() => {
+                    hideError(errorId);
+                }, 5000);
+            }
+            
+            function hideError(errorId) {
+                document.getElementById(errorId).classList.add('hidden');
+            }
+            
+            function showSuccess(successId, messageId, message) {
+                document.getElementById(successId).classList.remove('hidden');
+                document.getElementById(messageId).textContent = message;
+                
+                // Auto hide after 5 seconds
+                setTimeout(() => {
+                    document.getElementById(successId).classList.add('hidden');
+                }, 5000);
+            }
+            
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+        });
+    </script>
+</body>
+</html>
